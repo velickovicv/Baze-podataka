@@ -58,7 +58,7 @@ group by kupac.id, kupac.ime, kupac.prezime
 having count(case when poslastica.broj_kalorija < 150 THEN 1 END) >=3
 AND having count(case when poslastica.vegansko = 1 THEN 1 END) = 0
 
-1. d) KURAC
+1. d) -- Nemam jbg
 
 
 2. a)
@@ -75,3 +75,17 @@ from satistika
 where tip = 'kolac'
 order by ukupno desc
 fetch first 1 rows only;
+
+2. b)
+
+with kupcikojinarucujutorte as (
+select kupac_id
+from narudzbina inner join poslastica on narudzbina.poslastica_id = poslastica.id
+where poslastica.id = 'torta'
+having count(*) >= 2
+)
+
+update narudzbina
+set cena = cena * 0.95
+where cena = 0
+and kupac_id in (select kupac_id from kupackojikupujetorte);
