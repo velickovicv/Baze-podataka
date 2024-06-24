@@ -40,3 +40,36 @@ GROUP BY
     t.ID, t.NAZIV
 HAVING 
     SUM(CASE WHEN a.POL = 'Z' THEN 1 ELSE 0 END) > 10;
+
+1. c)
+
+select atleticar.id, atleticar.ime, atleticar.prezime, count(atleticar_takmicenje.takmicenje_id) as broj_takmicenja
+from atleticar inner join atleticar_takmicenje on atleticar.id = atleticar_takmicenje.atleticar_id
+inner join takmicenje on atleticar_takmicenje.takmicenje_id = takmicenje.id
+groupe by atleticar.id, atleticar.ime, atleticar.prezime
+having count(atleticar_takmicenje.takmicenje_id) > 4
+and sum(case when takmicenje.duzina < 1000 then 1 else 0 end) =0;
+
+1. d)
+
+select takmicenje.id, takmicenje.naziv, count(atleticar_takmicenje.atleticar_id) as broj_ucesnika
+from takmicenje inner join atleticar_takmicenje on takmicenje_id = atleticar_takmicenje.takmicenje_id
+group by takmicenje.id, takmicenje.naziv
+order by broj_uceniska asc
+fetch 1 rows only;
+
+2. a) 
+
+create view informacije
+select takmicenje.naziv, takmicenje.datum, count(atleticar_takmicenje.altericar_id) as ukupan_broj_takmicara
+avg(extract(YEAR SYS DATE) - atleticar.god_rod) as prosecna_starost
+from takmicenje left join atletciar_takmicenje on takmicenje.id = atleticar_takmicenje.takmicenje_id
+left join atleticar on atleticar_takmicenje.atleticar_id = atletciar.id
+group by takmicenje.naziv. avg(god_rod)
+order by ukupan_broj_ucesnika desc
+fetch 1 rows only;
+
+select takmicenje.id, takmicenje.naziv 
+from informacije
+order by ukupan_broj_takmicara desc
+fetch 1 rows only;
