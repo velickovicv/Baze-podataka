@@ -58,7 +58,20 @@ group by kupac.id, kupac.ime, kupac.prezime
 having count(case when poslastica.broj_kalorija < 150 THEN 1 END) >=3
 AND having count(case when poslastica.vegansko = 1 THEN 1 END) = 0
 
-1. d) -- Nemam jbg
+1. d) SELECT p.ime, 
+       p.prezime, 
+       p.pol, 
+       p.radni_staz
+FROM poslasticar p
+JOIN narudzbina n ON p.id = n.poslasticar_id
+JOIN poslastica pl ON n.poslastica_id = pl.id
+JOIN kupac k ON n.kupac_id = k.id
+WHERE p.specijalnost = 'domace torte'
+  AND pl.vegansko = 1
+  AND k.adresa LIKE '%Nis%'
+GROUP BY p.ime, p.prezime, p.pol, p.radni_staz
+ORDER BY COUNT(pl.id) DESC
+FETCH FIRST 1 ROWS ONLY;
 
 
 2. a)
