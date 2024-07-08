@@ -1,0 +1,54 @@
+-- 1. a)
+
+CREATE TABLE SPORTISTA (
+    ID INT PRIMARY KEY,
+    IME VARCHAR(50) NOT NULL,
+    PREZIME VARCHAR(50) NOT NULL,
+    BRTEL VARCHAR(15),
+    GOD_ROD INT,
+    GRAD VARCHAR(50),
+    PLATA DECIMAL(10, 2)
+);
+
+CREATE TABLE KLUB (
+    ID INT PRIMARY KEY,
+    NAZIV VARCHAR(100) NOT NULL,
+    LOKACIJA VARCHAR(100),
+    GOD_OSNIVANJA INT,
+    SPORT VARCHAR(50)
+);
+
+CREATE TABLE CLANN (
+    ID INT PRIMARY KEY,
+    ID_SPORTISTE INT,
+    ID_KLUBA INT,
+    DATUM_OD DATE NOT NULL,
+    DATUM_DO DATE,
+    TIM VARCHAR(20) CHECK (TIM IN ('skola', 'prvi', 'mladi')),
+    FOREIGN KEY (ID_SPORTISTE) REFERENCES SPORTISTA(ID),
+    FOREIGN KEY (ID_KLUBA) REFERENCES KLUB(ID)
+);
+
+-- 1. b)
+
+select klub.naziv, klub.lokacija, klub.god_osnivanja
+from klub 
+where extract (YEAR from sysdate) - klub.god_osnivanja > 20 AND klub.sport = 'odbojka'
+order by god_osnivanja desc
+
+-- 1. d)
+
+select klub.naziv, klub.sport, count(*) as broj_clanova
+from klub inner join clan on klub.id = clan.id_kluba
+inner join sportista on clan.id_sportista = sportista.id
+where klub.tim = 'skola' and extract (YEAR from sysdate) - clan.god_rod < 15
+group by klub.naziv, klub.sport 
+order by broj_clanova desc
+fetch first 1 row only;
+
+-- 1. c)
+
+select  sportisa.ime, sportista.prezime, clan.tim
+from sportista inner join clan on sportista.id = clan.id_sportista
+inner join klub on clan.id_kluba = klub.id 
+where extract (YEAR from sysdate) - sportista.god_rod < 30 and sportista.grad != klub.lokacija
