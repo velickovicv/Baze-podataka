@@ -115,3 +115,15 @@ where broj_klubova >= 2
 
 -- 2. b)
 
+UPDATE SPORTISTA
+SET PLATA = PLATA * 0.97  -- Umanjenje plate za 3%
+WHERE ID IN (
+    SELECT S.ID
+    FROM SPORTISTA S
+    JOIN CLAN C ON S.ID = C.ID_SPORTISTE
+    JOIN KLUB K ON C.ID_KLUBA = K.ID
+    WHERE C.TIM = 'prvi'  -- Samo igrači u prvom timu
+    AND K.LOKACIJA = 'Novi Sad'  -- Klubovi iz Novog Sada
+    AND C.DATUM_DO IS NULL  -- Trenutni članovi
+);
+
