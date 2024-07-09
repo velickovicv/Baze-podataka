@@ -52,3 +52,66 @@ select  sportisa.ime, sportista.prezime, clan.tim
 from sportista inner join clan on sportista.id = clan.id_sportista
 inner join klub on clan.id_kluba = klub.id 
 where extract (YEAR from sysdate) - sportista.god_rod < 30 and sportista.grad != klub.lokacija
+
+-- 1. e)
+
+SELECT 
+    KLUB.NAZIV, 
+    KLUB.LOKACIJA
+FROM 
+    KLUB
+INNER JOIN 
+    CLAN M ON KLUB.ID = M.ID_KLUBA
+INNER JOIN 
+    SPORTISTA SM ON M.ID_SPORTISTE = SM.ID
+WHERE 
+    KLUB.SPORT = 'vaterpolo'
+    AND M.TIM = 'mladi'
+    AND SM.PLATA > (
+        SELECT AVG(SP.PLATA)
+        FROM CLAN P
+        INNER JOIN SPORTISTA SP ON P.ID_SPORTISTE = SP.ID
+        WHERE P.ID_KLUBA = KLUB.ID
+          AND P.TIM = 'prvi'
+          AND P.DATUM_DO IS NULL
+    )
+    AND (SELECT COUNT(*) 
+         FROM CLAN C2
+         INNER JOIN SPORTISTA S2 ON C2.ID_SPORTISTE = S2.ID
+         WHERE C2.ID_KLUBA = KLUB.ID
+           AND C2.TIM = 'mladi'
+           AND S2.PLATA > (
+               SELECT AVG(SP.PLATA)
+               FROM CLAN P
+               INNER JOIN SPORTISTA SP ON P.ID_SPORTISTE = SP.ID
+               WHERE P.ID_KLUBA = KLUB.ID
+                 AND P.TIM = 'prvi'
+                 AND P.DATUM_DO IS NULL
+           )
+    ) >= 2
+    AND NOT EXISTS (
+        SELECT 1
+        FROM CLAN P1
+        INNER JOIN SPORTISTA SP1 ON P1.ID_SPORTISTE = SP1.ID
+        WHERE P1.ID_KLUBA = KLUB.ID
+          AND P1.TIM = 'prvi'
+          AND SP1.GRAD = 'Novi Sad'
+          AND SP1.PLATA > 20000
+    )
+GROUP BY 
+    KLUB.NAZIV, 
+    KLUB.LOKACIJA;
+
+-- 2. a)
+
+  create view IGRAC_STAT as
+  select sportista.ime, sportista.prezime, extract (YEAR from sysdate) - sportista.god_rod) as godine, sporista.plata, count(distinct id_kluba) as broj_klubova
+  from sportista inner join clan on sportista.id = clan.id_sportiste
+  group by ime, prezime, godine, plata;
+
+select *
+from igrac_stat 
+where broj_klubova >= 2
+
+-- 2. b)
+
