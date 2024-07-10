@@ -127,3 +127,16 @@ WHERE ID IN (
     AND C.DATUM_DO IS NULL  -- Trenutni članovi
 );
 
+-- 2. c)
+
+-- Brišemo iz tabele CLAN
+DELETE C
+FROM CLAN C
+-- Povezujemo tabelu CLAN sa tabelom KLUB da dobijemo informacije o klubovima
+JOIN KLUB K ON C.ID_KLUBA = K.ID
+-- Povezujemo tabelu CLAN sa drugom instancom tabele CLAN da pronađemo sportiste koji su u timu "mladi"
+LEFT JOIN CLAN MLADI ON C.ID_SPORTISTE = MLADI.ID_SPORTISTE AND MLADI.TIM = 'mladi'
+-- Definišemo uslove za brisanje
+WHERE C.TIM = 'skola'  -- Sportisti u timu "škola"
+AND EXTRACT(YEAR FROM SYSDATE) - K.GOD_OSNIVANJA > 20  -- Klubovi stariji od 20 godina
+AND MLADI.ID_SPORTISTE IS NULL;  -- Sportisti koji nisu u timu "mladi"
