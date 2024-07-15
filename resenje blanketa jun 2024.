@@ -91,14 +91,31 @@ fetch first 1 rows only;
 
 2. b)
 
-with kupcikojinarucujutorte as (
-select kupac_id
-from narudzbina inner join poslastica on narudzbina.poslastica_id = poslastica.id
-where poslastica.id = 'torta'
-having count(*) >= 2
+SELECT id_kupca
+FROM narudzbina
+WHERE id_poslastice IN (
+    SELECT id
+    FROM poslastica
+    WHERE tip = 'torta'
 )
+GROUP BY id_kupca
+HAVING COUNT(*) >= 2;
 
-update narudzbina
-set cena = cena * 0.95
-where cena = 0
-and kupac_id in (select kupac_id from kupackojikupujetorte);
+UPDATE narudzbina n
+SET n.cena = n.cena * 0.95 -- smanjenje cene za 5%
+WHERE n.datum_dostave IS NULL -- narudzbine koje jos uvek nisu isporucene
+AND EXISTS (
+    SELECT 1
+    FROM (
+        SELECT id_kupca
+        FROM narudzbina
+        WHERE id_poslastice IN (
+            SELECT id
+            FROM poslastica
+            WHERE tip = 'torta'
+        )
+        GROUP BY id_kupca
+        HAVING COUNT(*) >= 2
+    ) k
+    WHERE k.id_kupca = n.id_kupca
+);
