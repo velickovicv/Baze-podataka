@@ -83,46 +83,51 @@ FETCH FIRST 1 ROWS ONLY;
 
 2. a)
 
- create view statistika as
-select poslasticar.ime, poslasticar.prezime, count(*) as ukupno, avg(narudzbina.cena) as prosecna_cena_narudzbine, avg(narudzbina.ocena) as prosecna_ocena_narudzbine, poslastica.tip
-from poslasticar inner join narudzbina on poslasticar.id = narudzbina.poslasticar_id
-inner join poslastica on narudzbina.poslastica_id = poslastica.id
-group by poslasticar.ime, poslasticar.prezime, poslastica.tip
+CREATE VIEW STATISTIKA
+AS SELECT POSLASTICAR.IME, POSLASTICAR.PREZIME, COUNT(NARUZBINA.ID) AS UKUPNO_NARUDZBINA, POSLASTICA.TIP, AVG(NARUDZBINA.CENA) AS PROSECNA_CENA
+AVG(NARUDZBINA.OCENA) AS PROSECNA_OCENA 
+FROM POSLASTICAR 
+INNER JOIN NAURZBINA ON POSLASTICAR.ID = NARUDZBINA.POSLASTICAR_ID
+INNER JOIN POSLASTICA ON NARUDZBINA.POSLASTICA_ID = POSLASTICA.ID
+GROUP BY POSLASTICAR.IME, POSLASTICAR.PREZIME
 
+SELECT POSLASTICAR.IME, POSLASTICAR.PREZIME, POSLASTICAR.ID
+FROM STATISTIKA
+WHERE TIP = 'KOLAC'
+ORDER BY UKUPNO_NARUDZBINA DESC
+FETCH FIRST 1 ROWS ONLY;
 
-select poslasticar.ime, poslasticar.prezime, ukupno, poslastica.tip, prosecna_cena_narudzbine, prosecna_ocena_narudzbine
-from satistika
-where tip = 'kolac'
-order by ukupno desc
-fetch first 1 rows only;
+-- 2. B)
 
-2. b)
-
-SELECT id_kupca
-FROM narudzbina
-WHERE id_poslastice IN (
-    SELECT id
-    FROM poslastica
-    WHERE tip = 'torta'
+UPDATE NARUDZBINA
+SET CENA = CENA * 0,95
+WHERE CENA = 0
+AND KUPAC IN (SELECT KUPAC
+FROM NARUDZBINA
+WHERE POSLASTICA IN (SELECT ID
+FROM POSLASTICA
+WHERE TIP = 'TORTA'
 )
-GROUP BY id_kupca
-HAVING COUNT(*) >= 2;
-
-UPDATE narudzbina n
-SET n.cena = n.cena * 0.95 -- smanjenje cene za 5%
-WHERE n.datum_dostave IS NULL -- narudzbine koje jos uvek nisu isporucene
-AND EXISTS (
-    SELECT 1
-    FROM (
-        SELECT id_kupca
-        FROM narudzbina
-        WHERE id_poslastice IN (
-            SELECT id
-            FROM poslastica
-            WHERE tip = 'torta'
-        )
-        GROUP BY id_kupca
-        HAVING COUNT(*) >= 2
-    ) k
-    WHERE k.id_kupca = n.id_kupca
+GROUP BY KUPAC
+HAVING COUNT(*) >= 2
 );
+
+-- 2. C)
+
+DELETE 
+FROM POSLASTICAR
+WHERE ID IN (SELECT POSLASTICAR
+FROM NAURDZBINA
+WHERE POSLASTICA IN (SELECT ID
+FROM POSLASTICA
+WHERE TIP = 'KOLAC'
+)
+AND OCENA < 5
+)
+AND ID IN (SELECT POSLASTICAR
+FROM POSLASTICA IN (SELECT ID
+FROM POSLASTICA
+WHERE TIP 'TORTA'
+)
+AND CENA = 0;
+)
