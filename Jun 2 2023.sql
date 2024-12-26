@@ -59,7 +59,7 @@ FETCH FIRST 1 ROW ONLY; -- IZBACUJEMO SAMO PRVI RED KOJI SE POJAVI (NAZIV TAKMIC
 
 create view informacije
 select takmicenje.naziv, takmicenje.datum, count(atleticar_takmicenje.altericar_id) as ukupan_broj_takmicara
-avg(extract(YEAR SYS DATE) - atleticar.god_rod) as prosecna_starost
+avg(extract(YEAR FROM SYSDATE) - atleticar.god_rod) as prosecna_starost
 from takmicenje left join atletciar_takmicenje on takmicenje.id = atleticar_takmicenje.takmicenje_id
 left join atleticar on atleticar_takmicenje.atleticar_id = atletciar.id
 group by takmicenje.naziv. avg(god_rod)
