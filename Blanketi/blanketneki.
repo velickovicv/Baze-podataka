@@ -1,0 +1,6 @@
+.386
+.model flat,c
+data
+
+main endp
+end main
